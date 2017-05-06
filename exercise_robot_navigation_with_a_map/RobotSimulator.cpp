@@ -1,13 +1,15 @@
-/// Exercise: Robot navigation without a map
+/// Exercise: Robot navigation WITH a map
 ///
 /// The goal of this exercise is to let students think
 /// about own ideas to bring a robot from a point A
-/// in the world to a point B without using a map.
+/// in the world to a point B WITH the help of a map.
 ///
 /// The user can select a target point in the 2D world
-/// and the robot will try to reach this point without
-/// using a map, just based on its current position,
-/// the goal target position and its sensor readings.
+/// and the robot will try to reach this point with
+/// using a map. In this implementation the robot will
+/// use the wavefront algorithm on a discretized grid
+/// version of the world in order to plan a route from
+/// its current location to the target location.
 ///
 /// ---
 /// by Prof. Dr. Jürgen Brauer, www.juergenbrauer.org
