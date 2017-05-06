@@ -263,7 +263,7 @@ void Robot::update(Mat world)
      // OBSTACLE-AVOIDANCE #2: (Wall following)
      if (METHOD == 2)
      {
-        D = 15;
+        D = 20;
         if (sensor_f < D) // wall in front
            turn(one_radian);  // turn right
         else
