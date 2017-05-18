@@ -22,7 +22,7 @@
     <ProjectGuid>{D9ABC896-99ED-4737-9B74-DEF47972AF4F}</ProjectGuid>
     <RootNamespace>RobotSimulator</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>Robot localization with a map</ProjectName>
+    <ProjectName>Robot localization WITH a map</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
