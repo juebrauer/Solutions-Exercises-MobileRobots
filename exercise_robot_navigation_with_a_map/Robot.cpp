@@ -167,10 +167,13 @@ void Robot::update(Mat world)
   // do we already planned a route?
   if (!route_planned)
   {
-     plan_route_to_target(world, 20);
-     next_milestone_nr = 0;
-     current_behavior_mode = TURN_TO_GOAL;
-     next_milestone_point = route_in_world[next_milestone_nr];
+    route_in_world.clear();
+    plan_route_to_target(world, 20);
+    if (!route_planned)
+        return;
+    next_milestone_nr = 0;
+    current_behavior_mode = TURN_TO_GOAL;
+    next_milestone_point = route_in_world[next_milestone_nr];
   }
 
   // get sensor values
@@ -343,6 +346,15 @@ double Robot::get_distance_to_target()
 }
 
 
+/// method: plan_route_to_target()
+///
+/// compute a route in world coordinates
+/// to get the robot from its current location (pos.x, pos.y)
+/// to the desired target location (target_location.x, target_location.y)
+///
+/// the final route in world coordinates is stored in the vector
+/// vector<Point> route_in_world
+///
 void Robot::plan_route_to_target(Mat world, int grid_cell_size)
 {
    vector<Point> neighbors;
@@ -413,9 +425,12 @@ void Robot::plan_route_to_target(Mat world, int grid_cell_size)
    grid[target_gridy][target_gridx] = current_wave_step_nr;
    bool finished = false;
    route_on_grid.clear();
+   bool wave_could_not_propagate_further;
+   
    while (!finished)
    {
       printf("current_wave_step_nr=%d\n", current_wave_step_nr);
+      wave_could_not_propagate_further = true;
 
       // 6.1 propagate wave one step further
       for (int gy = 0; gy < grid_height; gy++)
@@ -443,6 +458,7 @@ void Robot::plan_route_to_target(Mat world, int grid_cell_size)
                   {
                      // yes! so propagate wave to there!
                      grid[fy][fx] = current_wave_step_nr + 1;
+                     wave_could_not_propagate_further = false;
 
                      // did we reach the start cell?
                      if ((fx == robot_gridx) && (fy == robot_gridy))
@@ -463,6 +479,17 @@ void Robot::plan_route_to_target(Mat world, int grid_cell_size)
       Mat grid_visu = get_grid_visu(20, grid_cell_size);
       imshow("grid", grid_visu);
       waitKey(0);
+
+      // the goal seems to be in a region of the 2D world
+      // that is not reachable!
+      if (wave_could_not_propagate_further)
+      {
+          printf("Wavefront propagation stopped before "
+                 "reaching the target location!\n");
+          
+          // stop planing!
+          return;
+      }
 
       // 6.3 goto next wave step nr      
       current_wave_step_nr++;

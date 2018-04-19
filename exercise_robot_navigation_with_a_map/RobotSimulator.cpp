@@ -7,7 +7,7 @@
 /// The user can select a target point in the 2D world
 /// and the robot will try to reach this point with
 /// using a map. In this implementation the robot will
-/// use the wavefront algorithm on a discretized grid
+/// use the "Wavefront" algorithm on a discretized grid
 /// version of the world in order to plan a route from
 /// its current location to the target location.
 ///
@@ -77,6 +77,11 @@ void simulate_one_episode(Mat world,
             circle(image, next_pos, 5, CV_RGB(255, 255, 0), -1);
             last_pos = next_pos;
          }
+      }
+      else
+      {
+          // no route found / planned!
+          break;
       }
 
 
