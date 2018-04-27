@@ -7,6 +7,6 @@
 // fewer sensors
 
 #define MAX_DIFFERENCE_SUM 30
-#define SIMULATE_NOISY_DISTANCE_SENSORS true
+#define SIMULATE_NOISY_DISTANCE_SENSORS false
 
 #define RESIZE_BELIEF_MAP_VISU false

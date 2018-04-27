@@ -71,6 +71,15 @@ vector<double> Robot::get_sensor_distances()
 }
 
 
+///
+/// For a given world <world> and a robot position <position>
+/// compute the sensor value for each of the robot's distance
+/// sensors and store them in the array <sensor_values>
+///
+/// If <simulate_noisy_sensors> we will add some random
+/// uniformly distributed noise on these sensor values.
+///
+
 void Robot::compute_sensor_values(Mat& world,
                                   Point position,
                                   double* sensor_values,
@@ -147,6 +156,22 @@ void Robot::compute_sensor_values(Mat& world,
 } // compute_sensor_values
 
 
+///
+/// For a given world <world> and a robot position <position>
+/// and a list of current real sensor values <real_sensor_values>
+/// we compute the sensor values we would get (without any noise)
+/// at the robot position <position>.
+///
+/// Already DURING the computation of these sensor values
+/// we compute the sum of differences between these hypothetical sensor
+/// values and the given real sensor values <real_sensor_values> and
+/// if the sum reaches the threshold <max_allowed_difference>,
+/// we stop the computation of the hypothetical sensor values
+///
+/// --> we say, no, we cannot be at this hypothetical position <position>
+/// since the sensor values we would get here are too different compared
+/// to the actual real sensor values <real_sensor_values>.
+///
 
 bool Robot::check_hypothetical_position(Mat& world,
                                         Point position,
@@ -338,8 +363,13 @@ void Robot::update_position_belief_map(Mat world)
    {
       for (int x = 0; x < W; x++)
       {
-         if (position_belief_map[y][x]>0.0)
-            position_belief_map[y][x]-=0.02;
+          //if (position_belief_map[y][x] > 0.0)
+          {
+              //position_belief_map[y][x] -=0.02; // linear decay
+              position_belief_map[y][x]   *=0.95; // exponential decay
+              if (position_belief_map[y][x] < 0.01)
+                  position_belief_map[y][x] = 0.0;
+          }
       }
    }
 
@@ -456,25 +486,31 @@ void Robot::update(Mat world)
    Point2d old_pos = pos;
 
    // get sensor values
-   double sensor_f   = sensor_values[0]; // front
-   double sensor_lll = sensor_values[1]; // left most
-   double sensor_ll  = sensor_values[2]; // left middle
-   double sensor_l   = sensor_values[3]; // left
-   double sensor_r   = sensor_values[4]; // right
-   double sensor_rr  = sensor_values[5]; // right middle
-   double sensor_rrr = sensor_values[6]; // right most
+   double sensor_0 = sensor_values[0];
+   double sensor_1 = sensor_values[1];
+   double sensor_2 = sensor_values[2];
+   double sensor_3 = sensor_values[3];
+   double sensor_4 = sensor_values[4];
+   double sensor_5 = sensor_values[5];
+   double sensor_6 = sensor_values[6];
      
    const double one_radian = +M_PI / 180.0;
 
-   double MIN_DIST = 40;
+   double MIN_DIST = 10;
 
-   if ((sensor_l < MIN_DIST) || (sensor_r < MIN_DIST))
+   if ((sensor_0 < MIN_DIST) || (sensor_1 < MIN_DIST))
    {
       // turn left or right?
-      if (sensor_l<sensor_r)
-         turn(+one_radian*(rand()%5+1));
-      else
-         turn(-one_radian*(rand()%5+1));
+       if (sensor_0 < sensor_1)
+       {
+            //turn(+one_radian*(rand() % 10 + 1));
+            turn(M_PI / 16);
+       }
+       else
+       {
+            //turn(-one_radian*(rand() % 10 + 1));
+            turn(-M_PI / 16);
+       }
    }
    else
       move(1);

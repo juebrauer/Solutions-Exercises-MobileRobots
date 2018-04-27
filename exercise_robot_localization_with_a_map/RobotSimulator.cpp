@@ -152,7 +152,7 @@ void simulate_one_episode(Mat world,
 
       // 6. show simulation step nr
       char txt[100];
-      sprintf_s(txt, "simulation step %d", simulation_step);
+      sprintf_s(txt, "step %d", simulation_step);
       putText(image,
          txt,
          Point(20, 50),
@@ -264,25 +264,20 @@ int main()
 
   // 5. create a robot
   vector<double> sensor_angles, sensor_distances;
-  sensor_angles.push_back(0.0);
-
-  sensor_angles.push_back(-M_PI / 3);
   sensor_angles.push_back(-M_PI / 4);
-  sensor_angles.push_back(-M_PI / 8);
-
-  sensor_angles.push_back(+M_PI / 8);
   sensor_angles.push_back(+M_PI / 4);
-  sensor_angles.push_back(+M_PI / 3);
-
-  sensor_distances.push_back(200);
-
-  sensor_distances.push_back(200);
-  sensor_distances.push_back(200);
-  sensor_distances.push_back(200);
+  sensor_angles.push_back(-M_PI / 2);
+  sensor_angles.push_back(+M_PI / 2);
+  sensor_angles.push_back(-M_PI / 8);
+  sensor_angles.push_back(+M_PI / 8);
 
   sensor_distances.push_back(200);
   sensor_distances.push_back(200);
   sensor_distances.push_back(200);
+  sensor_distances.push_back(200);
+  sensor_distances.push_back(200);
+  sensor_distances.push_back(200);
+  
   Robot r1("R2D2",
            10,
            Point(WORLD_HEIGHT/2, WORLD_WIDTH/2),
