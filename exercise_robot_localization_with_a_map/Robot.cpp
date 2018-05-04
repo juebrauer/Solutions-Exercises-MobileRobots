@@ -142,7 +142,7 @@ void Robot::compute_sensor_values(Mat& world,
     double final_sensor_value = (double)step;
     if (simulate_noisy_sensors)
     {
-       int RANGE = (int) (sensor_max_dist / 10);
+       int RANGE = (int) (sensor_max_dist / 40);
        double rnd_val = (double)(-RANGE / 2 + rand() % RANGE);
        final_sensor_value += rnd_val;
     }
@@ -332,7 +332,7 @@ double Robot::get_sensor_vec_distance(int N, double* vec1, double* vec2)
 
 void Robot::increase_belief_for_position(int x, int y, double inc)
 {
-   int Neigh = 3;
+   int Neigh = 1;
    for (int dy = -Neigh; dy <= Neigh; dy++)
    {
       for (int dx = -Neigh; dx <= Neigh; dx++)
@@ -366,7 +366,7 @@ void Robot::update_position_belief_map(Mat world)
           //if (position_belief_map[y][x] > 0.0)
           {
               //position_belief_map[y][x] -=0.02; // linear decay
-              position_belief_map[y][x]   *=0.95; // exponential decay
+              position_belief_map[y][x]   *=0.70; // exponential decay
               if (position_belief_map[y][x] < 0.01)
                   position_belief_map[y][x] = 0.0;
           }
@@ -488,12 +488,7 @@ void Robot::update(Mat world)
    // get sensor values
    double sensor_0 = sensor_values[0];
    double sensor_1 = sensor_values[1];
-   double sensor_2 = sensor_values[2];
-   double sensor_3 = sensor_values[3];
-   double sensor_4 = sensor_values[4];
-   double sensor_5 = sensor_values[5];
-   double sensor_6 = sensor_values[6];
-     
+  
    const double one_radian = +M_PI / 180.0;
 
    double MIN_DIST = 10;
