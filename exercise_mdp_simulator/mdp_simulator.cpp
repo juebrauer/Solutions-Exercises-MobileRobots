@@ -144,9 +144,16 @@ void read_gridworld_file(string fname)
    }
 
    // 8. prepare array for optimal policy
+   //    and initialize it with some action
    optimal_policy = new int*[height];
    for (int y = 0; y < height; y++)
+   {
       optimal_policy[y] = new int[width];
+      for (int x = 0; x < width; x++)
+      {
+         optimal_policy[y][x] = LEFT;
+      }
+   }
    
 } // read_gridworld_file
 
@@ -156,11 +163,11 @@ string action_to_string(int a)
 {
    switch (a)
    {
-   case LEFT : return "LEFT";
-   case TOP  : return "TOP";
-   case RIGHT: return "RIGHT";
-   case DOWN : return "DOWN";
-   default   : return "unknown action";
+      case LEFT : return "<<<";
+      case TOP  : return "^^^";
+      case RIGHT: return ">>>";
+      case DOWN : return "VVV";
+      default   : return "unknown action";
    }
 } // action_to_string 
 
@@ -180,9 +187,9 @@ void show_gridworld(int cellsize=150)
          Vec3b col;
          switch (cell_types[gy][gx])
          {
-         case FREE: col = Vec3b(255, 255, 255); break; // free
-         case WALL: col = Vec3b(0, 0, 0); break; // wall
-         case ABSORBING: col = Vec3b(0, 255, 0); break; // terminate
+            case FREE:      col = Vec3b(255, 255, 255); break; // free --> white                               
+            case WALL:      col = Vec3b(0, 0, 0); break;       // wall --> black
+            case ABSORBING: col = Vec3b(0, 255, 0); break;     // terminate --> green
          }
 
          int x1 = gx*cellsize;
@@ -197,11 +204,15 @@ void show_gridworld(int cellsize=150)
             text_size = 2;
 
          sprintf_s(txt, "r=%.2f", reward_function[gy][gx]);
+         if (reward_function[gy][gx] != 0)
+            col = Vec3b(0, 0, 255); // red
+         else
+            col = Vec3b(0, 0, 0);
          putText(visu,
             txt,
             Point(x1 + 5, y1 + 20),
             FONT_HERSHEY_SIMPLEX, font_size, // font face and scale
-            CV_RGB(0, 0, 0), // white
+            col,
             text_size); // line thickness and type
 
          sprintf_s(txt, "U=%.5f", utility_function[gy][gx]);
@@ -441,8 +452,8 @@ int main()
 {
    srand((unsigned int) time(NULL));
 
-   read_gridworld_file("grid_worlds/4x3_gridworld.txt");
-   //read_gridworld_file("grid_worlds/10x10_gridworld.txt");
+   //read_gridworld_file("grid_worlds/4x3_gridworld.txt");
+   read_gridworld_file("grid_worlds/10x10_gridworld.txt");
 
    bool converged = false;
    int iteration_step = 0;
@@ -452,7 +463,8 @@ int main()
 
       compute_optimal_policy_from_utility_values();
 
-      show_gridworld(150);
+      //show_gridworld(150);
+      show_gridworld(80);
 
       value_iteration();
 
