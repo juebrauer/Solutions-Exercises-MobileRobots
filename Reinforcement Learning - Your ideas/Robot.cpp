@@ -464,10 +464,13 @@ void Robot::update_state_action_associations()
       score += learn_rate_scaled_reward;
 
       // make sure scores stay in [0.0, 1.0]
-      if (score < 0.0)
-         score = 0.0;
-      if (score > 1.0)
-         score = 1.0;
+      if (LIMIT_SCORES)
+      {
+         if (score < 0.0)
+            score = 0.0;
+         if (score > 1.0)
+            score = 1.0;
+      }
 
       // store new score in map (dictionary)
       brain_state_action_scores[state_action_pair] = score;

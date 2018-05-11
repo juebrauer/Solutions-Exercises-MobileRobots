@@ -42,3 +42,5 @@ static string food_names[2] = { "GREEN-FOOD", "RED-FOOD" };
 
 #define NR_DIFFERENT_DISTANCES 5
 
+#define LIMIT_SCORES false
+

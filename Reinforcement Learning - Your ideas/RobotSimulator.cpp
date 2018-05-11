@@ -133,11 +133,11 @@ void simulate_one_episode(Mat world,
 
       } // for (all food pieces)
 
-      if (!food_found)
-      {
+      //if (!food_found)
+      //{
          r1.update_current_reward( REWARD_ENERGY_LOSS * (double) (1 + rand() % 5) );
          //r1.update_current_reward(REWARD_ENERGY_LOSS);
-      }
+      //}
 
       
       // 8. keep track of the episode return      
@@ -280,8 +280,8 @@ int main()
             reward = REWARD_RED_FOOD;
 
          Food* f = new Food(rndfoodtype,
-            x, // + (-10 + rand() % 21),
-            y, // + (-10 + rand() % 21),
+            x + (-10 + rand() % 21),
+            y + (-10 + rand() % 21),
             FOOD_RADIUS,
             reward);
          food_pieces.push_back(f);
