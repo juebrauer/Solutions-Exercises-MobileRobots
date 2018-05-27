@@ -20,10 +20,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 
-#define SAVE_IMAGES 0
-#define SAVE_FOLDER "V:\\tmp"
-#define PLAY_SOUND false
-#define WAIT_FOR_KEYPRESS false
 
 #include <iostream>
 #include <conio.h>
@@ -91,33 +87,36 @@ void simulate_one_episode(Mat world,
 
 
       // 7. for each sensor draw a sensor ray
-      for (int sensor_nr = 0; sensor_nr < r1.get_nr_wall_sensors(); sensor_nr++)
+      if (0)
       {
-         double sensor_value = sensor_values[sensor_nr];
+         for (int sensor_nr = 0; sensor_nr < r1.get_nr_wall_sensors(); sensor_nr++)
+         {
+            double sensor_value = sensor_values[sensor_nr];
 
-         // get (x,y) coords of current robot position
-         double x = pos.x;
-         double y = pos.y;
+            // get (x,y) coords of current robot position
+            double x = pos.x;
+            double y = pos.y;
 
-         // get sensor orientation relative to robots orientation
-         double sensor_angle = wall_sensor_angles[sensor_nr];
+            // get sensor orientation relative to robots orientation
+            double sensor_angle = wall_sensor_angles[sensor_nr];
 
-         // map robot angle + sensor_angle to a direction vector
-         double sensor_dx = cos(r1.get_orientation() + sensor_angle);
-         double sensor_dy = sin(r1.get_orientation() + sensor_angle);
+            // map robot angle + sensor_angle to a direction vector
+            double sensor_dx = cos(r1.get_orientation() + sensor_angle);
+            double sensor_dy = sin(r1.get_orientation() + sensor_angle);
 
-         // compute sensor start position
-         double sensor_startx = x + sensor_dx * r1.get_radius();
-         double sensor_starty = y + sensor_dy * r1.get_radius();
+            // compute sensor start position
+            double sensor_startx = x + sensor_dx * r1.get_radius();
+            double sensor_starty = y + sensor_dy * r1.get_radius();
 
-         // compute sensor ray end position
-         double sensor_endx = sensor_startx + sensor_dx * sensor_value;
-         double sensor_endy = sensor_starty + sensor_dy * sensor_value;
+            // compute sensor ray end position
+            double sensor_endx = sensor_startx + sensor_dx * sensor_value;
+            double sensor_endy = sensor_starty + sensor_dy * sensor_value;
 
-         // draw sensor ray line
-         line(image, Point((int)sensor_startx, (int)sensor_starty), Point((int)sensor_endx, (int)sensor_endy), CV_RGB(255, 255, 0), 1);
+            // draw sensor ray line
+            line(image, Point((int)sensor_startx, (int)sensor_starty), Point((int)sensor_endx, (int)sensor_endy), CV_RGB(255, 255, 0), 1);
 
-      } // for (draw all sensor rays)
+         } // for (draw all sensor rays)
+      }
 
 
       // 9. did the robot move over a food piece?
@@ -161,7 +160,6 @@ void simulate_one_episode(Mat world,
 
 
       // 10. each step needs a little bit energy...
-      //     so moving forward and backward alone is not good!      
       r1.update_current_reward(REWARD_ONE_STEP);
 
 
@@ -246,6 +244,8 @@ void simulate_one_episode(Mat world,
 
 int main()
 {
+   srand((unsigned int)time(NULL));
+
   // 1. load image of world: change this to the folder where you store
    //   a black-white pixel coding your world
   //    white pixels mean: no drivable space

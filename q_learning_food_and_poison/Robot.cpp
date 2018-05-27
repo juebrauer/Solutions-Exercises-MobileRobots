@@ -337,7 +337,7 @@ void Robot::update(Mat world, vector<Food*> food_pieces)
      // do not use programmed behavior,
      // but choose behavior due to current Q-values
 
-     // 1. fill state[6] array with current values
+     // 1. fill state[3] array with current values
      set_state_vector();
 
      // 2. find action in current state with highest Q-value
@@ -548,7 +548,7 @@ void Robot::compute_food_sensor_values(vector<Food*> food_pieces)
    else
       food_type = 2;
 
-   if (0)
+   if (1)
    {
       printf("food sensor: (%.2f, %.1f, %.0f)\n",
          angle_to_next_food_piece,
@@ -605,7 +605,7 @@ int discretize(double value, double min_value, double max_value, int nr_bins)
 
 
 ///
-/// we have 11*11*3*4 = 1452 different states
+/// we have 11*11*3 = 363 different states
 ///
 void Robot::set_state_vector()
 {
