@@ -6,6 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <fstream>
+#include <conio.h>
 
 #include "params.h"
 
@@ -271,13 +272,13 @@ void Robot::set_lfd_mode(bool b)
 
    if (lfd_mode)
    {
-      printf("Hi! I'am a small robot. Please show me how to act in this world\n");
+      printf("\nHi! I'am a small robot. Please show me how to act in this world\n");
       printf("by pressing <- or -> or ^.\n");
       printf("\nIf you are finished with your demonstrations press ESC.\n");
    }
    else
    {
-      printf("Stopped Learning from Demonstration mode");
+      printf("\nStopped Learning from Demonstration mode");
       save_demonstration_data( DEMONSTRATION_DATA_FILE );
    }
 
@@ -295,26 +296,32 @@ int Robot::get_size_of_demo_dataset()
 
 void Robot::save_demonstration_data(string fname)
 {
-   // 1. open file
-   printf("\n\nsaving demonstration data to file %s\n", fname.c_str());
+   // 1. open file for writing
+   printf("\n\nsaving demonstration data to file\n%s\n", fname.c_str());
    std::ofstream f(fname);
 
    // 2. write nr of demonstrations to file
    f << demonstration_data.size() << endl;
 
-   // 3. for all demonstrations ...
+   // 3. write len of sensor vec to file
+   f << sensor_values.size() << endl;
+
+   // 4. write len of action vec to file
+   f << 1 << endl;
+   
+   // 5. for all demonstrations ...
    for (int demonr = 0; demonr < demonstration_data.size(); demonr++)
    {      
       demo_datum* d = demonstration_data[demonr];
 
-      // 3.1 write all sensor values to file
+      // 5.1 write all sensor values to file
       for (int svnr = 0; svnr < d->sensor_values.size(); svnr++)
       {
          double sensorvalue = d->sensor_values[svnr];
          f << sensorvalue << endl;
       }
 
-      // 3.2 write action to file
+      // 5.2 write action to file
       f << d->action << endl;
    }
 
@@ -324,6 +331,67 @@ void Robot::save_demonstration_data(string fname)
 
 bool Robot::load_demonstration_data(string fname)
 {
-   return false;
+   // 1. open file for reading
+   printf("\nTrying to load demonstration data from file\n%s\n", fname.c_str());
+   std::ifstream f(fname);
+
+
+   // 2. could we open this file?
+   //    or does it exist at all?
+   if (f.is_open() == false)
+   {
+      printf("\nError! Could not open file %s\n", fname.c_str());
+      _getch();
+      return false;
+   }
+
+
+   // 3. read number of demonstration data items
+   int nr_demonstrations;
+   f >> nr_demonstrations;
+   printf("\nThere are %d sample (state,action) pairs in the demonstration data file.\n",
+      nr_demonstrations);
+
+
+   // 4. read length of sensor vector
+   int len_sensor_vec;
+   f >> len_sensor_vec;
+   printf("Sensor vector length: %d\n", len_sensor_vec);
+
+
+   // 5. read length of action vector
+   int len_action_vec;
+   f >> len_action_vec;
+   printf("Action vector length: %d\n", len_action_vec);
+
+   
+   // 6. load all demonstration data items
+   for (int item = 0; item < nr_demonstrations; item++)
+   {
+      // 6.1 create new demo data item
+      demo_datum* d = new demo_datum;
+
+      // 6.2 read all sensor values
+      for (int svnr = 0; svnr < len_sensor_vec; svnr++)
+      {
+         double sensor_value;
+         f >> sensor_value;
+         d->sensor_values.push_back( sensor_value );
+      }
+
+      // 6.3 read demonstrated action
+      int a;
+      f >> a;
+      d->action = (enum actions)a;
+
+      // 6.4 store demo data item in vector of all demonstrations
+      demonstration_data.push_back( d );
+   }
+   printf("\nI have read in %d data items.\n", (int)demonstration_data.size());
+
+
+   _getch();
+
+   return true;
 
 } // load_demonstration_data
