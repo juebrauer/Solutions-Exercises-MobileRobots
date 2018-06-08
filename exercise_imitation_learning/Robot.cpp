@@ -5,6 +5,9 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <fstream>
+
+#include "params.h"
 
 Robot::Robot(string         name,
              int            radius,
@@ -21,6 +24,8 @@ Robot::Robot(string         name,
   this->sensor_distances = sensor_distances;
   nr_sensors             = (int) sensor_angles.size();
   lfd_mode               = false;
+
+  load_demonstration_data( DEMONSTRATION_DATA_FILE );
 
 }
 
@@ -130,82 +135,103 @@ void Robot::compute_sensor_values(Mat world)
 
 void Robot::update(Mat world)
 {
-  compute_sensor_values(world);
+   // 1. compute new sensor values
+   compute_sensor_values(world);
 
-  // get sensor values of sensor #0 and sensor #1
-  double sensor_val0 = sensor_values[0];
-  double sensor_val1 = sensor_values[1];
-
-  enum actions a = undefined;
-
-  if (lfd_mode)
-  {
-     int c = cv::waitKeyEx();
-     //printf("%d\n", c);
+   enum actions a = undefined;
      
-     switch (c)
-     {
-        case 2424832: // cursor left
-           a = left;
-           break;
 
-        case 2555904: // cursor right
-           a = right;
-           break;
+   // 2.
+   // are we in "Learning from Demonstration" mode?
+   // if yes, collect an action example from the teacher
+   // if not, drive according to the model learned
+   // from the demonstration data   
+   if (lfd_mode)
+   {
+      a = forward;
 
-        case 2490368: // forward
-           a = forward;
-           break;
+      // collect new (state,action) sample pair from the teacher
+      bool valid_action = true;
+      int c;
 
-        case 27: // escape
-           // stop learning from demonstration
-           lfd_mode = false;
-           printf("User stopped collection demonstrationd data!\n");
-           break;
-     }
+      c = cv::waitKeyEx();
+      //printf("%d\n", c);
 
-     if (lfd_mode)
-     {
-        // save current demonstration example
-        // (state, action) = (sensor_values, action):
-        //
-        demo_datum* d = new demo_datum;
-        for (int i = 0; i < sensor_values.size(); i++)
-           d->sensor_values.push_back(sensor_values[i]);
-        d->action = a;
-        demonstration_data.push_back(d);
-     }
+      switch (c)
+      {
+         case 2424832: // cursor left
+            a = left;
+            valid_action = true;
+            break;
 
-  } // if (lfd_mode)
+         case 2555904: // cursor right
+            a = right;
+            valid_action = true;
+            break;
+
+         case 2490368: // forward
+            a = forward;
+            valid_action = true;
+            break;
+
+         case 27: // escape
+            // stop learning from demonstration
+            set_lfd_mode( false );
+            valid_action = false;            
+            break;
+      }
+
+      // did we record a valid action?
+      if (valid_action)
+      {
+         // save current demonstration example
+         // (state, action) = (sensor_values, action):
+         //
+         demo_datum* d = new demo_datum;
+         for (int svnr = 0; svnr < sensor_values.size(); svnr++)
+         {
+            d->sensor_values.push_back( sensor_values[svnr] );            
+         }
+         d->action = a;
+         demonstration_data.push_back(d);
+      }
+
+   } // if (lfd_mode)
   
-  else
-  {
-  }
+   else
+   {
+      // now compute an action based on the model learned
+      // from the demonstration data
 
-  switch (a)
-  {
+
+   }
+
+
+   // 3. perform the action
+   switch (a)
+   {
       case left: turn(-M_PI / 16);
-                 break;
+                  break;
       case right: turn(+M_PI / 16);
                   break;
       case forward: move(3);
-                    break;
-  }
+                     break;
+   }
   
-  /*
-  // Braitenberg variant:
-  // near to a wall?
-  if ((sensor_val0 < 10) || (sensor_val1 < 10))
-  {
-    // turn left or right?
-    if (sensor_val0<sensor_val1)
+   /*
+   // Braitenberg variant:
+   // near to a wall?
+   if ((sensor_val0 < 10) || (sensor_val1 < 10))
+   {
+      // turn left or right?
+      if (sensor_val0<sensor_val1)
       turn(M_PI / 16);
-    else
+      else
       turn(-M_PI / 16);
-  }
-  else
-    move(1);
-  */
+   }
+   else
+      move(1);
+   */
 
 } // update
 
@@ -243,6 +269,18 @@ void Robot::set_lfd_mode(bool b)
 {
    lfd_mode = b;
 
+   if (lfd_mode)
+   {
+      printf("Hi! I'am a small robot. Please show me how to act in this world\n");
+      printf("by pressing <- or -> or ^.\n");
+      printf("\nIf you are finished with your demonstrations press ESC.\n");
+   }
+   else
+   {
+      printf("Stopped Learning from Demonstration mode");
+      save_demonstration_data( DEMONSTRATION_DATA_FILE );
+   }
+
 } // set_lfd_mode
 
 
@@ -252,3 +290,40 @@ int Robot::get_size_of_demo_dataset()
    return (int)demonstration_data.size();
 
 } // get_size_of_demo_dataset
+
+
+
+void Robot::save_demonstration_data(string fname)
+{
+   // 1. open file
+   printf("\n\nsaving demonstration data to file %s\n", fname.c_str());
+   std::ofstream f(fname);
+
+   // 2. write nr of demonstrations to file
+   f << demonstration_data.size() << endl;
+
+   // 3. for all demonstrations ...
+   for (int demonr = 0; demonr < demonstration_data.size(); demonr++)
+   {      
+      demo_datum* d = demonstration_data[demonr];
+
+      // 3.1 write all sensor values to file
+      for (int svnr = 0; svnr < d->sensor_values.size(); svnr++)
+      {
+         double sensorvalue = d->sensor_values[svnr];
+         f << sensorvalue << endl;
+      }
+
+      // 3.2 write action to file
+      f << d->action << endl;
+   }
+
+} // save_demonstration_data
+
+
+
+bool Robot::load_demonstration_data(string fname)
+{
+   return false;
+
+} // load_demonstration_data

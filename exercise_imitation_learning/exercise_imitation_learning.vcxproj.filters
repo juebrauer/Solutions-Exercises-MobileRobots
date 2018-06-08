@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Robot.h" />
+    <ClInclude Include="params.h" />
   </ItemGroup>
 </Project>

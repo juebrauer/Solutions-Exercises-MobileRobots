@@ -70,6 +70,10 @@ class Robot
 
     int             get_size_of_demo_dataset();
 
+    void            save_demonstration_data(string fname);
+
+    bool            load_demonstration_data(string fname);
+
 
 
 
