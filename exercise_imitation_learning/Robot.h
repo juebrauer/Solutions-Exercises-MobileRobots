@@ -10,7 +10,7 @@ class Robot
 {
    public:
 
-      enum actions { undefined, left, right, forward };
+      enum actions { undefined, left, right, forward, NR_ACTIONS};
 
       struct demo_datum
       {
@@ -31,6 +31,8 @@ class Robot
     vector<double>         sensor_values;
     bool                   lfd_mode;
     vector<demo_datum*>    demonstration_data;
+    int                    world_width;
+    int                    world_height;
 
 
     
@@ -74,6 +76,7 @@ class Robot
 
     bool            load_demonstration_data(string fname);
 
+    enum actions    k_nn_classifier(double* avg_distance, int k=3);
 
 
 

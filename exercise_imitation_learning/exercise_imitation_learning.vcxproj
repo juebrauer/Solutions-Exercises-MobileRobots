@@ -124,6 +124,7 @@
     <ClCompile Include="RobotSimulator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="math_tools.h" />
     <ClInclude Include="params.h" />
     <ClInclude Include="Robot.h" />
   </ItemGroup>

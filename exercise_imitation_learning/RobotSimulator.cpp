@@ -22,6 +22,7 @@
 
 #include "opencv2/opencv.hpp"
 #include "Robot.h"
+#include "params.h"
 
 
 
@@ -34,7 +35,7 @@ int main()
   // 1. load image of world: change this to the folder where you store world1.png!
   //    white pixels mean: no drivable space
   //    blavk pixels mean: drivable space
-  string img_filename = "world4.png";
+  string img_filename = WORLD_FILENAME;
   Mat world = imread(img_filename);
 
 
@@ -66,7 +67,10 @@ int main()
   sensor_distances.push_back(200);
   sensor_distances.push_back(200);
   sensor_distances.push_back(200);
-  Robot r1("R2D2", 10, Point(50,50), M_PI/2, sensor_angles, sensor_distances);
+  Point startpos = Point(50, 50);
+  if (RANDOM_START_POS)
+     startpos += Point(-30 + rand() % 61, -30 + rand() % 61);
+  Robot r1("R2D2", 10, startpos, M_PI/2, sensor_angles, sensor_distances);
 
 
   // start simulation loop with
@@ -139,7 +143,7 @@ int main()
       txt,
       Point(20, 50),
       FONT_HERSHEY_SIMPLEX, 0.7, // font face and scale
-      CV_RGB(255,0,0), // white
+      CV_RGB(255,255,0), // white
       1); // line thickness and type
 
 
