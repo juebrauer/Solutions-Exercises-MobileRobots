@@ -26,7 +26,7 @@ int main()
 {
   // 1. load image of world: change this to the folder where you store world1.png!
   //    white pixels mean: no drivable space
-  //    blavk pixels mean: drivable space
+  //    black pixels mean: drivable space
   string img_filename = "world2.png";
   Mat world = imread(img_filename);
 

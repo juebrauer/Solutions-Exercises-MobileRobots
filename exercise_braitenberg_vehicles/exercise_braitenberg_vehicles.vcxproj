@@ -23,6 +23,7 @@
     <ProjectGuid>{23DB0E19-2E7A-4E8B-AFA9-39AFA385F67B}</ProjectGuid>
     <RootNamespace>exercise_braitenberg_vehicles</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>Braitenberg vehicles</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -80,13 +80,13 @@ void Robot::compute_sensor_values(Mat world)
     double sensor_startx = x + sensor_dx * radius;
     double sensor_starty = y + sensor_dy * radius;
 
-    // 2.5 now move from sensor start position into sensor direction
-    //     till we reach the maximum distance or hit an obstacle in the world (white pixel)
+    // Now move from sensor start position into sensor direction
+    // till we reach the maximum distance or hit an obstacle in the world (white pixel)
 
-    // 2.6 get maximum sensor distance
+    // 2.5 get maximum sensor distance
     double sensor_max_dist = sensor_distances[sensor_nr];
 
-    // 2.7 test step by step whether the next pixel is a black pixel == free space
+    // 2.6 test step by step whether the next pixel is a black pixel == free space
     int step;
     for (step = 0; step < sensor_max_dist; step++)
     {
@@ -111,10 +111,10 @@ void Robot::compute_sensor_values(Mat world)
 
     } // for (move along sensor line)
 
-    // 2.8 store final sensor value (= maximum distance or distance till we have found a non-black pixel)
+    // 2.7 store final sensor value (= maximum distance or distance till we have found a non-black pixel)
     sensor_values.push_back(step);
 
-    // 2.9 output sensor value for debugging
+    // 2.8 output sensor value for debugging
     //printf("sensor #%d: %d\n", sensor_nr, step);
 
   } // for (sensor_nr)
