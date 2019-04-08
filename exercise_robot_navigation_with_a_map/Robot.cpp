@@ -5,6 +5,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
+
+
 Robot::Robot(string         name,
              int            radius,
              Point2d        start_pos,
@@ -194,7 +197,7 @@ void Robot::update(Mat world)
   if (current_behavior_mode == TURN_TO_GOAL)
   {
      
-     // compute direction vector to the target location
+     // compute direction vector to the next milestone location
      double dirx = next_milestone_point.x - pos.x;
      double diry = next_milestone_point.y - pos.y;
 
@@ -276,10 +279,13 @@ void Robot::update(Mat world)
         next_milestone_nr++;
         if (next_milestone_nr == route_in_world.size())
         {
-           route_planned = false; // restart!
+           route_planned = false; // restart!           
         }
         else
+        {
            next_milestone_point = route_in_world[next_milestone_nr];
+           PlaySound(TEXT("../sounds/15-Cartoon-sound-effect.wav"), NULL, SND_FILENAME);
+        }
      }
      else
         move(1);     

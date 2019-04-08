@@ -166,10 +166,11 @@ void simulate_one_episode(Mat world,
          exit_simulation = true;
 
       // 13. did the robot reach the goal?
-      if (norm((Point)(r1.get_position()) - selected_target_pos) <= 1.5*r1.get_radius())
+      if (norm((Point)(r1.get_position()) - selected_target_pos) <= 1.25*r1.get_radius())
       {
          printf("Robot reached target location!\n\n\n");
          exit_simulation = true;
+         PlaySound(TEXT("../sounds/37-Cartoon-sound-effect.wav"), NULL, SND_FILENAME);
       }
 
 

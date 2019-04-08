@@ -1,5 +1,9 @@
 #pragma once
 
+// for playing a sound whenever
+// a milestone has been reached
+#include <windows.h> 
+
 #include "opencv2/core.hpp"
 
 using namespace std;
@@ -18,8 +22,8 @@ class Robot
 
      char BEHAVIOR_MODE_STRINGS[NR_MODES][100] =
      { "Turn to goal",
-        "Go straight to goal",
-        "Obstacle avoidance"
+       "Go straight to goal",
+       "Obstacle avoidance"
      };
 
     
