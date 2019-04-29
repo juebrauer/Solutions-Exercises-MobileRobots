@@ -27,43 +27,36 @@ Robot::Robot(  string          name,
    // Initialize the robot's "brain"
    // of probabilities of mapping states to actions
    brain_state_action_scores.clear();
-   for (int d1 = 0; d1 < NR_DIFFERENT_DISTANCES; d1++)
+   for (int a1 = 0; a1 < NR_DIFFERENT_ANGLES; a1++)
    {
-      for (int d2 = 0; d2 < NR_DIFFERENT_DISTANCES; d2++)
+      for (int a2 = 0; a2 < NR_DIFFERENT_ANGLES; a2++)
       {
-         for (int d3 = 0; d3 < NR_DIFFERENT_DISTANCES; d3++)
+         for (int act = 0; act < NR_ACTIONS; act++)
          {
-            for (int d4 = 0; d4 < NR_DIFFERENT_DISTANCES; d4++)
-            {
-               for (int a = 0; a < NR_ACTIONS; a++)
-               {
 
-                  char state_action_pair[50];
-                  set_state_action_pair_str(state_action_pair, 50, d1, d2, d3, d4, a);
+            char state_action_pair[50];
+            set_state_action_pair_str(state_action_pair, 50, a1, a2, act);
 
-                  //double some_random_ness = (double) ((rand() % 21) - 10) / 100.0; // [-0.1,0.1]
+            //double some_random_ness = (double) ((rand() % 21) - 10) / 100.0; // [-0.1,0.1]
 
-                  brain_state_action_scores[string(state_action_pair)] = 0.5;
+            brain_state_action_scores[string(state_action_pair)] = 0.5;
 
-                  //if (a == ACTION_MOVE_FORWARD)
-                  //               brain_state_action_scores[string(state_action_pair)] += 0.1;
-               } // for actions a
+            //if (a == ACTION_MOVE_FORWARD)
+            //               brain_state_action_scores[string(state_action_pair)] += 0.1;
 
-            } // for d4
-         } // for d3
-      } // for d2
-   } // for d1
+         } // for actions act
+      } // for angles a2
+   } // for angles a1
 
 } // Robot constructor
 
 
 void Robot::set_state_action_pair_str(char* str, int str_size,
-   int d1, int d2,
-   int d3, int d4,
-   int a)   
+                                      int a1, int a2,
+                                      int a)   
 {
-   sprintf_s(str, str_size, "[s=(%d,%d,%d,%d)<->a=%s]",
-      d1,d2,d3,d4, action_str[a].c_str());
+   sprintf_s(str, str_size, "[s=(%d,%d)<->a=%s]",
+      a1,a2, action_str[a].c_str());
 }
 
 
@@ -116,15 +109,24 @@ void Robot::search_nearest_food_item(Mat world,
 ///
 /// Search for the nearest food type
 /// to the robot of type <foodtype>
-/// and return the angle
+/// and return vector to it
 ///
 void Robot::compute_sensor_values(Mat world,
                                   vector<Food*> food_pieces)
 {
+   Point2d vec_to_green_food;
+   Point2d vec_to_red_food;
+
    search_nearest_food_item(world, food_pieces, FOODTYPE_GREEN,
                             vec_to_green_food);
    search_nearest_food_item(world, food_pieces, FOODTYPE_RED,
                             vec_to_red_food);
+
+   angle_to_green_food = atan2(vec_to_green_food.y,
+                               vec_to_green_food.x);
+
+   angle_to_red_food = atan2(vec_to_red_food.y,
+                             vec_to_red_food.x);
 
 } // compute_sensor_values
 
@@ -184,7 +186,7 @@ void Robot::update(Mat world, vector<Food*> food_pieces)
       // a state-action-pair string
       char search_str[50];
       set_state_action_pair_str(search_str, 50,
-         state[0], state[1], state[2], state[3], a);
+         state[0], state[1], a);
 
       // get the corresponding score of that
       // state-action pair
@@ -231,7 +233,7 @@ void Robot::update(Mat world, vector<Food*> food_pieces)
 
    // 5. execute chosen action from last step
    printf("Performing action %s\n", action_str[best_action].c_str());
-   int stepwidth = 10;
+   int stepwidth = ROBOT_DISTANCE_PER_MOVE;
    switch (best_action)
    {
       case ACTION_MOVE_LEFT: // turn left
@@ -252,7 +254,7 @@ void Robot::update(Mat world, vector<Food*> food_pieces)
    // 6. prepare a string that encodes
    //    the current state and the chosen action
    set_state_action_pair_str(last_state_action_pair, 50,
-                             state[0], state[1], state[2], state[3], best_action);
+                             state[0], state[1], best_action);
    //printf("Current state-action pair is: %s\n", last_state_action_pair);
 
 
@@ -372,20 +374,16 @@ int discretize(double value, double min_value, double max_value, int nr_bins)
 
 
 ///
-/// we have 5*5*5*5=625 different states
+/// set entries of state[] vector array
 ///
 void Robot::compute_state_vector()
 {
-   printf("sensor data (%.0f,%.0f,%.0f,%.0f) --> ",
-      vec_to_green_food.x, vec_to_green_food.y,
-      vec_to_red_food.x, vec_to_red_food.y);
+   printf("sensor data (%.0f,%.0f) --> ",
+      angle_to_green_food, angle_to_red_food);
 
    // prepare current state vector
-   state[0] = discretize(vec_to_green_food.x, -50.0, 50.0, NR_DIFFERENT_DISTANCES);
-   state[1] = discretize(vec_to_green_food.y, -50.0, 50.0, NR_DIFFERENT_DISTANCES);
-
-   state[2] = discretize(vec_to_red_food.x, -50.0, 50.0, NR_DIFFERENT_DISTANCES);
-   state[3] = discretize(vec_to_red_food.y, -50.0, 50.0, NR_DIFFERENT_DISTANCES);
+   state[0] = discretize(angle_to_green_food, -M_PI/2, +M_PI/2, NR_DIFFERENT_ANGLES);
+   state[1] = discretize(angle_to_red_food,   -M_PI/2, +M_PI/2, NR_DIFFERENT_ANGLES);
 
    show_state_vector();
   
@@ -394,7 +392,7 @@ void Robot::compute_state_vector()
 
 void Robot::show_state_vector()
 {
-   printf("Current state is s=(%d,%d,%d,%d)\n", state[0], state[1], state[2], state[3]);
+   printf("Current state is s=(%d,%d)\n", state[0], state[1]);
 }
 
 
@@ -484,13 +482,13 @@ void Robot::update_state_action_associations()
 
 
 
-Point2d Robot::get_vec_to_green_food()
+double Robot::get_angle_to_green_food()
 {
-   return vec_to_green_food;
+   return angle_to_green_food;
 }
 
 
-Point2d Robot::get_vec_to_red_food()
+double Robot::get_angle_to_red_food()
 {
-   return vec_to_red_food;
+   return angle_to_red_food;
 }

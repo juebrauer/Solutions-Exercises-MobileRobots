@@ -54,9 +54,9 @@ public:
 
    void            update_state_action_associations();
 
-   Point2d         get_vec_to_green_food();
+   double          get_angle_to_green_food();
 
-   Point2d         get_vec_to_red_food();
+   double          get_angle_to_red_food();
 
 
 
@@ -68,18 +68,16 @@ public:
 private:
 
    void                 set_state_action_pair_str(char* str, int str_size,
-                                                  int a1, int d1,
-                                                  int a2, int d2,
-                                                  int a);
+                                                  int a1, int a2,
+                                                  int act);
 
    void                 search_nearest_food_item(Mat world,
                                                  vector<Food*> food_pieces,
                                                  int foodtype_to_search_for,
                                                  Point2d& vec_to_food);
-
-   Point2d              vec_to_green_food;
-   Point2d              vec_to_red_food;
-
+   double               angle_to_green_food;
+   double               angle_to_red_food;
+   
    string               name;
    double               radius;
    Point2d              pos;
@@ -87,7 +85,7 @@ private:
    double               episode_return;
    double               current_reward;
 
-   int                  state[4];
+   int                  state[2];
    int                  age;
 
    int                  world_width;

@@ -97,10 +97,17 @@ void simulate_one_episode(Mat world,
       double  r = r1.get_radius();
       circle(image, pos, (int)r, CV_RGB(255, 255, 255), 1);
 
-      // 6.2 draw the line to the next green and
-      //     next red food item
-      line(image, pos, pos + r1.get_vec_to_green_food(), CV_RGB(0,   255, 0), 1);
-      line(image, pos, pos + r1.get_vec_to_red_food(),   CV_RGB(255,   0, 0), 1);
+      // 6.2 draw lines into the directions of the
+      //     next green and next red food item
+      double veclen = 40.0;
+      int diry, dirx;
+      diry = (int) (sin(r1.get_angle_to_green_food()) * veclen);
+      dirx = (int) (cos(r1.get_angle_to_green_food()) * veclen);
+      line(image, pos, pos + Point2d(dirx,diry), CV_RGB(0,   255, 0), 1);
+
+      diry = (int)(sin(r1.get_angle_to_red_food()) * veclen);
+      dirx = (int)(cos(r1.get_angle_to_red_food()) * veclen);
+      line(image, pos, pos + Point2d(dirx, diry), CV_RGB(255, 0, 0), 1);      
 
 
       // 7. did the robot move over a food piece?
@@ -109,6 +116,7 @@ void simulate_one_episode(Mat world,
       {
          double dist =
             norm((Point2d)(food_pieces[i]->get_position()) - r1.get_position());
+
          if (dist < r1.get_radius() + food_pieces[i]->get_radius())
          {
             // robot has moved over i-th food piece!
@@ -133,11 +141,11 @@ void simulate_one_episode(Mat world,
 
       } // for (all food pieces)
 
-      //if (!food_found)
-      //{
-         r1.update_current_reward( REWARD_ENERGY_LOSS * (double) (1 + rand() % 5) );
-         //r1.update_current_reward(REWARD_ENERGY_LOSS);
-      //}
+      if (!food_found)
+      {
+         //r1.update_current_reward( REWARD_ENERGY_LOSS * (double) (1 + rand() % 5) );
+         r1.update_current_reward(REWARD_ENERGY_LOSS);
+      }
 
       
       // 8. keep track of the episode return      
@@ -148,6 +156,7 @@ void simulate_one_episode(Mat world,
 
       // 9. update state action associations      
       r1.update_state_action_associations();
+
       // stop for a keypress by user, if a reward was given
       if (r1.get_current_reward() != 0.0)
       {
@@ -201,7 +210,7 @@ void simulate_one_episode(Mat world,
 
 
       // 16. add new food to world?
-      if (rand()%20==0)
+      if (rand()%15==0)
       {
          int rndfoodtype = rand() % 2;
          double reward;
