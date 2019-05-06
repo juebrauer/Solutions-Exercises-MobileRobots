@@ -118,7 +118,7 @@ void read_gridworld_file(string fname)
    }
 
    // 6. prepare utility per state array
-   //    utility functin U:S->R
+   //    utility function U:S->R
    utility_function = new double*[height];
    old_utility_function = new double*[height];
    for (int y = 0; y < height; y++)
