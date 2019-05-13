@@ -142,7 +142,7 @@ void Robot::compute_sensor_values(Mat& world,
     double final_sensor_value = (double)step;
     if (simulate_noisy_sensors)
     {
-       int RANGE = (int) (sensor_max_dist / 40);
+       int RANGE = (int) (sensor_max_dist / 10);
        double rnd_val = (double)(-RANGE / 2 + rand() % RANGE);
        final_sensor_value += rnd_val;
     }
@@ -493,19 +493,15 @@ void Robot::update(Mat world)
 
    double MIN_DIST = 10;
 
-   if ((sensor_0 < MIN_DIST) || (sensor_1 < MIN_DIST))
+   // Behavior #1:
+  // near to a wall?
+   if ((sensor_0 < 10) || (sensor_1 < 10))
    {
       // turn left or right?
-       if (sensor_0 < sensor_1)
-       {
-            //turn(+one_radian*(rand() % 10 + 1));
-            turn(M_PI / 16);
-       }
-       else
-       {
-            //turn(-one_radian*(rand() % 10 + 1));
-            turn(-M_PI / 16);
-       }
+      if (sensor_0 < sensor_1)
+         turn(M_PI / 16 + rand() % 50 * one_radian );
+      else
+         turn(-M_PI / 16);
    }
    else
       move(1);

@@ -368,10 +368,10 @@ void Robot::plan_route_to_target(Mat world, int grid_cell_size)
    neighbors.push_back(Point( 0, 1));
    neighbors.push_back(Point(+1, 0));
    neighbors.push_back(Point( 0,-1));
-   neighbors.push_back(Point(-1,-1));
-   neighbors.push_back(Point(+1,+1));
-   neighbors.push_back(Point(-1,+1));
-   neighbors.push_back(Point(+1,-1));
+   //neighbors.push_back(Point(-1,-1));
+   //neighbors.push_back(Point(+1,+1));
+   //neighbors.push_back(Point(-1,+1));
+   //neighbors.push_back(Point(+1,-1));
 
    // 1. compute grid dimensions
    grid_width  = (world.cols / grid_cell_size) + 1;

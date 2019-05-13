@@ -268,7 +268,7 @@ int main()
   sensor_angles.push_back(+M_PI / 4);  
   sensor_angles.push_back(-M_PI / 2);  
   sensor_angles.push_back(+M_PI / 2);  
-  sensor_angles.push_back(-M_PI / 8);
+  //sensor_angles.push_back(-M_PI / 8);
   //sensor_angles.push_back(+M_PI / 8);
   
 
