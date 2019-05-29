@@ -20,6 +20,7 @@
 #
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # for time.sleep()
 import time
@@ -83,12 +84,19 @@ def show_information_about_observation_space(your_env):
 
 def show_information_about_action_space(your_env):
 
+    global nr_actions
+
     print("\nAction space:")
     print("\tType", your_env.action_space)
     print("\t10 example actions:", [your_env.action_space.sample() for i in range(10)] )
-    print("\tTotal number of possible actions:", your_env.action_space.n)
+
+    nr_actions = your_env.action_space.n
+    print("\tTotal number of possible actions:", nr_actions)
 
 
+#
+# observation (continuous) vector --> state vector (discrete)
+#
 def map_observation_to_state_vector(observation):
 
     global nr_bins_per_observation_dimension
@@ -117,11 +125,12 @@ def map_observation_to_state_vector(observation):
         # 2.5
         # make sure, we really use only nr_bins_per_observation_dimension
         # many bins and not nr_bins_per_observation_dimension+1 many!
+        # This could happen, if the actual sensor values are smaller or larger
+        # than the recorded minimum/maximum values
+        if binned_sensor_val < 0:
+            binned_sensor_val = 0
         if binned_sensor_val >= nr_bins_per_observation_dimension:
-
-            # Note: these lines should never be reached!
-            print("ATTENTION! Value out of bins error!")
-            input()
+            binned_sensor_val = nr_bins_per_observation_dimension-1
 
         # 2.6 add that binned sensor value to state vector
         state_vector.append(binned_sensor_val)
@@ -132,7 +141,70 @@ def map_observation_to_state_vector(observation):
     return state_vector
 
 
+#
+# make sure, before we use Q(s,a), that we have
+# made an entry in the Q-Table for (s,a):
+def make_sure_key_exists(s):
 
+    global Q, nr_actions
+
+    # check whether there is already an entry for that
+    # state s in the dictionary for the key (s,0)?
+    key = (str(s), 0)
+
+    if not key in Q:
+
+        # no! there is no entry!
+        # so all they keys (s,0) and (s,1) do not exist
+        # for this, generate the initial entries
+        for a in range(0, nr_actions):
+            Q[(str(s), a)] = 0.0
+
+#
+# Given the current Q-values for (state,action) pairs and
+# current state-action pair (s,a)
+# Which is the best action a* that we can take in state s?
+# i.e. a* = argmax Q(s,a)
+#              a
+#
+def get_best_action(s):
+
+    global Q, nr_actions
+
+    make_sure_key_exists(s)
+
+    # Now we are sure, that there are entries for state
+    # s and all actions a in the Q-value table Q(s,a).
+    # We can therefore search for the action a, that
+    # maximizes the Q-value:
+    best_action = 0
+    for a in range(1,nr_actions):
+
+        # found larger Q-value
+        if Q[(str(s),a)] > Q[(str(s),best_action)]:
+            best_action = a
+
+    # 3. return the action a which has maximum Q(s,a) value
+    return best_action
+
+
+# Given a state s,
+# search for the best action a,
+# that will lead to the most future reward.
+# This is known as the utility of the state s
+def get_state_utility(s):
+
+    global Q
+
+    best_action = get_best_action(s)
+    utility_of_state_s = Q[(str(s),best_action)]
+    return utility_of_state_s
+
+
+
+# global variables:
+nr_actions = -1
+Q = {}
 
 def main():
 
@@ -140,14 +212,26 @@ def main():
     #    arguments of the observation vector
     global observations_min,observations_max
     global nr_bins_per_observation_dimension
+    global Q
     print("observations_min:", observations_min)
     print("observations_max:", observations_max)
 
 
     # 2. set hyper-parameters:
-    NR_EPISODES = 1
+    NR_EPISODES = 10000
     MAX_STEPS_PER_EPISODE = 1000
 
+    # greedy exploitation or more exploration?
+    EPSILON_EXPLORATION_VS_EXPLOITATION = 0.05
+
+    # learn rate
+    ETA = 0.5
+
+    # discounting factor: how much do future rewards matter?
+    GAMMA = 0.9
+
+    # for development
+    SHOW_DEBUG_INFO = False
 
     # 3. load the environment
     my_env = gym.make('CartPole-v1')
@@ -178,11 +262,22 @@ def main():
     #observations_max = np.zeros(4)
 
 
+
     # 8. Q-Learning:
+    episode_lengths = []
+    N = 50
+    mean_episode_lengths = [0 for i in range(0, N)]
+    plt.xlabel("Episode nr")
+    plt.ylabel("Episode length")
+
+
     for episode_nr in range(NR_EPISODES):
 
         # get initial observation
-        observation = my_env.reset()
+        observation_s1 = my_env.reset()
+        state_vector_s1 = map_observation_to_state_vector(observation_s1)
+
+        action_counters = [0,0]
 
         # for all steps in the current episode...
         for step_nr in range(MAX_STEPS_PER_EPISODE):
@@ -191,39 +286,100 @@ def main():
             my_env.render()
 
 
-            # 8.2 sample a random action from the action space
-            action = my_env.action_space.sample()
-
+            # 8.2 determine action to perform
+            rnd_number = np.random.uniform(0.0, 1.0)
+            if rnd_number<EPSILON_EXPLORATION_VS_EXPLOITATION:
+                # Exploration mode:
+                # sample a random action from the action space
+                a = my_env.action_space.sample()
+            else:
+                # (Greedy) Exploitation mode
+                a = get_best_action( state_vector_s1 )
+            action_counters[a] +=1
 
             # 8.3 do the action
-            observation, reward, done, info = my_env.step(action)
+            observation_s2, reward, done, info = my_env.step(a)
+            if done:
+                reward = -1.0
 
 
             # 8.4 map observation to state vector
-            state_vector = map_observation_to_state_vector(observation)
+            state_vector_s2 = map_observation_to_state_vector(observation_s2)
 
 
             # 8.5 show observation data and state vector
             # observation data is [position of cart, velocity of cart, angle of pole, rotation rate of pole]
-            print("step {}: new observation={}, action={}, reward={}, done={}"
-                  .format(step_nr,observation,action,reward,done))
-            print(state_vector)
+            if SHOW_DEBUG_INFO:
+                print("step {}: new observation={}, action={}, reward={}, done={}"
+                      .format(step_nr,observation_s2,a,reward,done))
+                print(state_vector_s2)
 
 
-            # 8.6 is the episode at the end?
+            # 8.6 Q-learning happens here!
+            s = state_vector_s1
+            future_reward = get_state_utility( state_vector_s2 )
+            make_sure_key_exists(s)
+            Q[(str(s),a)] = Q[(str(s),a)] +\
+                            ETA *(reward + GAMMA*future_reward - Q[(str(s),a)])
+            #                     ||||||||||||||||||||||||||||   XXXXXXXXXXXXX
+            #                     new estimated utility for      old estimated
+            #                     Q(s,a)                         utility of Q(s,a)
+            #
+            #                     the difference between | and X is an error signal
+            #                     that shows us in which direction to correct our
+            #                     estimation of the utility of Q(s,a)
+
+
+            # 8.7 is the episode at the end?
             if done:
-                print("Episode {} finished after {} timesteps"
-                      .format(episode_nr, step_nr))
+
+                episode_lengths.append(step_nr)
+
+                # given the episode lengths,
+                # compute the average of each N
+                # episode lengths
+                M = len(episode_lengths)
+                if M>N:
+                    i = M-N
+                    sum = 0
+                    for j in range(i,i+N):
+                        sum += episode_lengths[j]
+                    avg_episode_len = sum/N
+                    mean_episode_lengths.append(avg_episode_len)
+
+                print("Episode {} finished after {} timesteps. "
+                      "Action counters: {} "
+                      "Mean episode length: {} "
+                      .format(episode_nr, step_nr,
+                              action_counters,
+                              mean_episode_lengths[-1]))
+
+                # plot episode lengths and mean episode lengths
+                # from time to time
+                if step_nr % 1 == 0:
+                    plt.plot(episode_lengths, color="red")
+                    plt.plot(mean_episode_lengths, color="green")
+                    plt.draw()
+                    plt.show(block=False)
+                    time.sleep(0.01)
+
                 break
 
 
-            # 8.7
+            # 8.8
             # determine minimum and maximum values
             # observation vectors
             observations_min = np.minimum(observation, observations_min)
             observations_max = np.maximum(observation, observations_max)
 
-            #time.sleep(0.1)
+            # 8.9
+            # current state s2 becomes start state s1 for next step
+            state_vector_s1 = state_vector_s2
+
+            # 8.10
+            # wait for some time to see the behavior of the agent
+            # in the world
+            #time.sleep(0.2)
 
         # end-for (step_nr)
 
@@ -232,6 +388,7 @@ def main():
     print("observations_min:", observations_min)
     print("observations_max:", observations_max)
 
+    plt.show()
     my_env.close()
 
 main()
