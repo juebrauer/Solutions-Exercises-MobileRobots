@@ -44,6 +44,11 @@ import gym
 #   observations_min: [-2.3860441  -3.27420053 -0.20943904 -3.2074541 ]
 #   observations_max: [2.38207215 2.87269719 0.20943357 3.28998744]
 #
+# -->
+observations_min = [-2.3860441, -3.27420053, -0.20943904, -3.2074541]
+observations_max = [+2.38207215, +2.87269719, +0.20943357, +3.28998744]
+
+#
 #
 # Actions:
 # --------
@@ -83,19 +88,45 @@ def show_information_about_action_space(your_env):
     print("\tTotal number of possible actions:", your_env.action_space.n)
 
 
-def map_observation_to_state_vector(observation):
+def map_observation_to_state_vector(observation, nr_bins=10):
 
+    # start with an empty state vector
+    state_vector = []
 
-    return []
+    for sensor_val_nr,sensor_val in enumerate(observation):
+
+        # what is the minimum and maximum possible sensor value?
+        min_sensor_val = observations_min[sensor_val_nr]
+        max_sensor_val = observations_max[sensor_val_nr]
+
+        # how large is the sensor value range?
+        range = max_sensor_val - min_sensor_val
+
+        # how large is then one bin to make?
+        bin_size = range/nr_bins
+
+        # shift sensor value from, e.g. [-0.75,1.25] to [0.0, 2.0]
+        shift = -min_sensor_val
+        shifted_sensor_val = sensor_val+shift
+
+        # computed into which bin the shifted sensor value falls
+        binned_sensor_val = int((shifted_sensor_val/range)*nr_bins)
+
+        # add that binned sensor value to state vector
+        state_vector.append(binned_sensor_val)
+
+    # we have mapped the observation vector
+    # to a state vector
+    return state_vector
 
 
 
 
 def main():
 
+    global observations_min,observations_max
+
     # set hyper-parameters:
-    observations_min = [-2.3860441, -3.27420053, -0.20943904, -3.2074541]
-    observations_max = [+2.38207215, +2.87269719, +0.20943357, +3.28998744]
     NR_EPISODES = 1
     MAX_STEPS_PER_EPISODE = 1000
 
@@ -132,6 +163,7 @@ def main():
             # observation data is [position of cart, velocity of cart, angle of pole, rotation rate of pole]
             print("step {}: new observation={}, action={}, reward={}, done={}"
                   .format(step_nr,observation,action,reward,done))
+            print(state_vector)
 
             # is the episode at the end?
             if done:
