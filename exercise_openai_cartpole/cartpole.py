@@ -19,26 +19,31 @@
 # see https://gym.openai.com/docs/
 #
 
+import numpy as np
+
+# for time.sleep()
+import time
+
 import gym
-my_env = gym.make('CartPole-v0')
-#env = gym.make('MountainCar-v0')
 
 # For infos about the CartPole observation and action space see e.g.
 # https://github.com/openai/gym/wiki/CartPole-v0
-#
-# However, when printing
-# your_env.observation_space.high and
-# your_env.observation_space.low
-# I get other value ranges, namely these:
 #
 # Observation:
 # ------------
 # Type: Box(4)
 # Num 	Observation 	Min 	Max
-# 0 	Cart Position 	-4.8 	4.8
+# 0 	Cart Position 	-2.4 	2.4
 # 1 	Cart Velocity 	-Inf 	Inf
 # 2 	Pole Angle 	~ -0.418 	~ 0.418
 # 3 	Pole Velocity At Tip 	-Inf 	Inf
+#
+# When running 50.000 episodes till they ended (i.d. done=True)
+# I got the following minimum and maximum values for the individual
+# entries in the observation vector:
+#   observations_min: [-2.3860441  -3.27420053 -0.20943904 -3.2074541 ]
+#   observations_max: [2.38207215 2.87269719 0.20943357 3.28998744]
+#
 #
 # Actions:
 # --------
@@ -78,15 +83,31 @@ def show_information_about_action_space(your_env):
     print("\tTotal number of possible actions:", your_env.action_space.n)
 
 
+def map_observation_to_state_vector(observation):
+
+
+    return []
+
+
 
 
 def main():
 
+    # set hyper-parameters:
+    observations_min = [-2.3860441, -3.27420053, -0.20943904, -3.2074541]
+    observations_max = [+2.38207215, +2.87269719, +0.20943357, +3.28998744]
+    NR_EPISODES = 1
+    MAX_STEPS_PER_EPISODE = 1000
+
+    my_env = gym.make('CartPole-v1')
+    # env = gym.make('MountainCar-v0')
+
     show_information_about_observation_space(my_env)
     show_information_about_action_space(my_env)
 
-    NR_EPISODES = 1
-    MAX_STEPS_PER_EPISODE = 1000
+    # Only needed when we determine min/max observation values
+    #observations_min = np.zeros(4)
+    #observations_max = np.zeros(4)
 
     for episode_nr in range(NR_EPISODES):
 
@@ -104,9 +125,12 @@ def main():
             # do the action
             observation, reward, done, info = my_env.step(action)
 
+            # map observation to state vector
+            state_vector = map_observation_to_state_vector(observation)
+
             # show observation data
             # observation data is [position of cart, velocity of cart, angle of pole, rotation rate of pole]
-            print("step {}: new state s={}, action={}, reward={}, done={}"
+            print("step {}: new observation={}, action={}, reward={}, done={}"
                   .format(step_nr,observation,action,reward,done))
 
             # is the episode at the end?
@@ -115,9 +139,19 @@ def main():
                       .format(episode_nr, step_nr))
                 break
 
+            # determine minimum and maximum values
+            # observation vectors
+            observations_min = np.minimum(observation, observations_min)
+            observations_max = np.maximum(observation, observations_max)
+
+            #time.sleep(0.1)
+
         # end-for (step_nr)
 
     # end-for (episode_nr)
+
+    print("observations_min:", observations_min)
+    print("observations_max:", observations_max)
 
     my_env.close()
 
