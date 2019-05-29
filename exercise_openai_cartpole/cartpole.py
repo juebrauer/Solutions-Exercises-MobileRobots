@@ -47,6 +47,7 @@ import gym
 # -->
 observations_min = [-2.3860441, -3.27420053, -0.20943904, -3.2074541]
 observations_max = [+2.38207215, +2.87269719, +0.20943357, +3.28998744]
+nr_bins_per_observation_dimension = 10
 
 #
 #
@@ -88,35 +89,46 @@ def show_information_about_action_space(your_env):
     print("\tTotal number of possible actions:", your_env.action_space.n)
 
 
-def map_observation_to_state_vector(observation, nr_bins=10):
+def map_observation_to_state_vector(observation):
 
-    # start with an empty state vector
+    global nr_bins_per_observation_dimension
+
+    # 1. start with an empty state vector
     state_vector = []
 
+    # 2. map each sensor value to a state number
     for sensor_val_nr,sensor_val in enumerate(observation):
 
-        # what is the minimum and maximum possible sensor value?
+        # 2.1 what is the minimum and maximum possible sensor value?
         min_sensor_val = observations_min[sensor_val_nr]
         max_sensor_val = observations_max[sensor_val_nr]
 
-        # how large is the sensor value range?
+        # 2.2 how large is the sensor value range?
         range = max_sensor_val - min_sensor_val
 
-        # how large is then one bin to make?
-        bin_size = range/nr_bins
-
-        # shift sensor value from, e.g. [-0.75,1.25] to [0.0, 2.0]
+        # 2.3 shift sensor value from, e.g. [-0.75,1.25] to [0.0, 2.0]
         shift = -min_sensor_val
         shifted_sensor_val = sensor_val+shift
 
-        # computed into which bin the shifted sensor value falls
-        binned_sensor_val = int((shifted_sensor_val/range)*nr_bins)
+        # 2.4 compute into which bin the shifted sensor value falls
+        binned_sensor_val =\
+            int((shifted_sensor_val/range)*(nr_bins_per_observation_dimension-1))
 
-        # add that binned sensor value to state vector
+        # 2.5
+        # make sure, we really use only nr_bins_per_observation_dimension
+        # many bins and not nr_bins_per_observation_dimension+1 many!
+        if binned_sensor_val >= nr_bins_per_observation_dimension:
+
+            # Note: these lines should never be reached!
+            print("ATTENTION! Value out of bins error!")
+            input()
+
+        # 2.6 add that binned sensor value to state vector
         state_vector.append(binned_sensor_val)
 
+    # 3.
     # we have mapped the observation vector
-    # to a state vector
+    # to a state vector. Return this state vector!
     return state_vector
 
 
@@ -124,53 +136,88 @@ def map_observation_to_state_vector(observation, nr_bins=10):
 
 def main():
 
+    # 1. show information about min/max values of
+    #    arguments of the observation vector
     global observations_min,observations_max
+    global nr_bins_per_observation_dimension
+    print("observations_min:", observations_min)
+    print("observations_max:", observations_max)
 
-    # set hyper-parameters:
+
+    # 2. set hyper-parameters:
     NR_EPISODES = 1
     MAX_STEPS_PER_EPISODE = 1000
 
+
+    # 3. load the environment
     my_env = gym.make('CartPole-v1')
     # env = gym.make('MountainCar-v0')
 
+
+    # 4. which type has the observation space?
     show_information_about_observation_space(my_env)
+
+
+    # 5. observations will be mapped to states:
+    #    show information about the state space
+    print("Each dimension of the observation space is binned into"
+          " {} bins.".format(nr_bins_per_observation_dimension) )
+    observation = my_env.reset()
+    dim = len(observation)
+    nr_states = pow(nr_bins_per_observation_dimension, dim)
+    print("So there are {}^{}={} many states"
+          .format(nr_bins_per_observation_dimension, dim, nr_states))
+
+
+    # 6. which type has the action space?
     show_information_about_action_space(my_env)
 
-    # Only needed when we determine min/max observation values
+
+    # 7. Only needed when we determine min/max observation values
     #observations_min = np.zeros(4)
     #observations_max = np.zeros(4)
 
+
+    # 8. Q-Learning:
     for episode_nr in range(NR_EPISODES):
 
         # get initial observation
         observation = my_env.reset()
 
+        # for all steps in the current episode...
         for step_nr in range(MAX_STEPS_PER_EPISODE):
 
-            # show the world before we take the action
+            # 8.1 show the world before we take the action
             my_env.render()
 
-            # sample a random action from the action space
+
+            # 8.2 sample a random action from the action space
             action = my_env.action_space.sample()
 
-            # do the action
+
+            # 8.3 do the action
             observation, reward, done, info = my_env.step(action)
 
-            # map observation to state vector
+
+            # 8.4 map observation to state vector
             state_vector = map_observation_to_state_vector(observation)
 
-            # show observation data
+
+            # 8.5 show observation data and state vector
             # observation data is [position of cart, velocity of cart, angle of pole, rotation rate of pole]
             print("step {}: new observation={}, action={}, reward={}, done={}"
                   .format(step_nr,observation,action,reward,done))
             print(state_vector)
 
-            # is the episode at the end?
+
+            # 8.6 is the episode at the end?
             if done:
                 print("Episode {} finished after {} timesteps"
                       .format(episode_nr, step_nr))
                 break
 
+
+            # 8.7
             # determine minimum and maximum values
             # observation vectors
             observations_min = np.minimum(observation, observations_min)
