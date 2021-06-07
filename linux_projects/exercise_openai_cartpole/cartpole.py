@@ -218,8 +218,9 @@ def main():
 
 
     # 2. set hyper-parameters:
-    NR_EPISODES = 10000
+    NR_EPISODES = 1000000
     MAX_STEPS_PER_EPISODE = 1000
+    SHOW_ENVIRONMENT = False
 
     # greedy exploitation or more exploration?
     EPSILON_EXPLORATION_VS_EXPLOITATION = 0.05
@@ -265,7 +266,7 @@ def main():
 
     # 8. Q-Learning:
     episode_lengths = []
-    N = 50
+    N = 200
     mean_episode_lengths = [0 for i in range(0, N)]
     plt.xlabel("Episode nr")
     plt.ylabel("Episode length")
@@ -283,7 +284,8 @@ def main():
         for step_nr in range(MAX_STEPS_PER_EPISODE):
 
             # 8.1 show the world before we take the action
-            my_env.render()
+            if SHOW_ENVIRONMENT:
+                my_env.render()
 
 
             # 8.2 determine action to perform
@@ -370,13 +372,14 @@ def main():
             # 8.10
             # wait for some time to see the behavior of the agent
             # in the world
-            #time.sleep(0.2)
+            if SHOW_ENVIRONMENT:
+                time.sleep(0.02)
 
         # end-for (step_nr)
 
 
         # plot episode lengths and mean episode lengths        
-        if episode_nr % 50 == 0:
+        if episode_nr % 100 == 0:
             plt.clf()         
             plt.plot(episode_lengths, color="red", label="lengths", marker="+", linestyle="")
             plt.plot(mean_episode_lengths, color="green", label="avg lengths")
@@ -385,7 +388,7 @@ def main():
             plt.title("Episode lengths")
             plt.ion()
             plt.show(block=False)
-            #time.sleep(0.01)
+            time.sleep(0.01)
             plt.pause(1)
 
     # end-for (episode_nr)
