@@ -166,31 +166,36 @@ void Robot::update(Mat world)
       int c;
 
       c = cv::waitKeyEx();
-      //printf("%d\n", c);
+      printf("%d\n", c);
+
+      
 
       switch (c)
       {
-         case 'a': // cursor left
+         case 1048673: // cursor left
             a = left;
             valid_action = true;
             break;
 
-         case 'd': // cursor right
+         case 1048676: // cursor right
+            //printf("we are in case d\n");
             a = right;
             valid_action = true;
             break;
 
-         case 'w': // forward
+         case 1048695: // forward
             a = forward;
             valid_action = true;
             break;
 
-         case 27: // escape
+         case 1048603: // escape
             // stop learning from demonstration
             set_lfd_mode( false );
             valid_action = false;            
             break;
       }
+
+      //printf("action=%d\n", a);
 
       // did we record a valid action?
       if (valid_action)
@@ -240,11 +245,14 @@ void Robot::update(Mat world)
    switch (a)
    {
       case left: turn(-M_PI / 16);
-                  break;
+                 printf("turning left\n");
+                 break;
       case right: turn(+M_PI / 16);
+                  printf("turning right\n");
                   break;
       case forward: move(3);
-                     break;
+                    printf("drive forward\n");
+                    break;
    }
   
    /*

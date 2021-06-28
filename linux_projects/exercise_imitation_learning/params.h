@@ -4,7 +4,7 @@
 //#define DEMONSTRATION_DATA_FILE "demonstration_data\\how_to_drive_through_world4_test.txt"
 
 #define WORLD_FILENAME "world3.png"
-#define DEMONSTRATION_DATA_FILE "demonstration_data\\how_to_drive_through_world3.txt"
+#define DEMONSTRATION_DATA_FILE "demonstration_data/how_to_drive_through_world3.txt"
 
 //#define WORLD_FILENAME "world5.png"
 //#define DEMONSTRATION_DATA_FILE "demonstration_data\\how_to_drive_through_world5.txt"
